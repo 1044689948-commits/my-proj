@@ -706,7 +706,11 @@
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script>
+        // 设置 PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
         // 打开覆盖层
         function openOverlay(type, src, title) {
             const overlay = document.getElementById('fullOverlay');
@@ -717,11 +721,46 @@
             overlayBody.innerHTML = ''; // 清空内容
 
             if (type === 'pdf') {
-                // 嵌入 PDF 查看器
-                const iframe = document.createElement('iframe');
-                iframe.src = src; // 取消 #toolbar=0 以恢复工具栏
-                iframe.className = 'pdf-frame';
-                overlayBody.appendChild(iframe);
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                
+                // 统一使用 PDF.js 渲染 (解决移动端自动下载问题)
+                // 创建 Canvas 容器
+                const container = document.createElement('div');
+                container.style.cssText = 'width: 100%; height: 100%; overflow: auto; background: #525659; display: flex; flex-direction: column; align-items: center; padding: 20px 0;';
+                overlayBody.appendChild(container);
+
+                // 加载 PDF
+                const loadingTask = pdfjsLib.getDocument(src);
+                loadingTask.promise.then(function(pdf) {
+                    // 循环渲染每一页
+                    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                        pdf.getPage(pageNum).then(function(page) {
+                            const viewport = page.getViewport({scale: isMobile ? 0.6 : 1.2}); // 移动端缩放比例调小
+                            const canvas = document.createElement('canvas');
+                            const context = canvas.getContext('2d');
+                            canvas.height = viewport.height;
+                            canvas.width = viewport.width;
+                            canvas.style.marginBottom = '20px';
+                            canvas.style.boxShadow = '0 4px 10px rgba(0,0,0,0.3)';
+
+                            const renderContext = {
+                                canvasContext: context,
+                                viewport: viewport
+                            };
+                            page.render(renderContext);
+                            container.appendChild(canvas);
+                        });
+                    }
+                }, function (reason) {
+                    // 加载失败回退
+                    console.error(reason);
+                    const link = document.createElement('a');
+                    link.href = src;
+                    link.textContent = 'PDF 预览失败，点击下载';
+                    link.style.color = '#fff';
+                    container.appendChild(link);
+                });
+
             } else if (type === 'image') {
                 // 图片查看器 - 增强拖拽与缩放功能
                 const viewer = document.createElement('div');
