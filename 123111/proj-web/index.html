@@ -5,6 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>杨颜冰 | 游戏策划作品集</title>
     <style>
+        /* PC 访问建议 Banner */
+        #pc-advice-banner {
+            background: linear-gradient(90deg, #ff7675, #d63031);
+            color: white;
+            text-align: center;
+            padding: 0.8rem;
+            position: relative;
+            z-index: 2000;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+        }
+        #pc-advice-banner button {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
         :root {
             /* 更有活力的配色方案 */
             --bg-color: #f8f9fa;
@@ -481,9 +510,37 @@
             .nav-links::-webkit-scrollbar { display: none; }
             .nav-links a { font-size: 0.9rem; padding: 0.2rem 0.5rem; }
         }
+
+        /* Game Jam Card */
+        .gamejam-card {
+            grid-column: 1 / -1;
+            display: flex;
+            flex-direction: row;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            border: 1px solid rgba(255,255,255,0.6);
+            transition: transform 0.3s;
+        }
+        .gamejam-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); }
+        .gamejam-img { flex: 1; min-height: 300px; position: relative; }
+        .gamejam-img img { width: 100%; height: 100%; object-fit: cover; }
+        .gamejam-content { flex: 1; padding: 3rem; display: flex; flex-direction: column; justify-content: center; }
+        
+        @media (max-width: 768px) {
+            .gamejam-card { flex-direction: column; }
+            .gamejam-img { height: 200px; min-height: auto; flex: none; }
+            .gamejam-content { padding: 1.5rem; }
+        }
     </style>
 </head>
 <body>
+    <!-- PC 访问建议 -->
+    <div id="pc-advice-banner">
+        <span>⚠️ 温馨提示：为获得最佳浏览体验（尤其是PDF在线阅读），建议使用电脑端访问。</span>
+        <button onclick="document.getElementById('pc-advice-banner').style.display='none'">×</button>
+    </div>
 
     <!-- 装饰背景 -->
     <div class="bg-blob blob-1"></div>
@@ -686,13 +743,34 @@
                 <h3>Playable Demo (Prototype)</h3>
                 <p>WebGL 版本构建中... v0.2.1</p>
                 <div class="play-btn">▶</div>
-                <p style="font-size: 0.9rem; opacity: 0.8;">预计开放试玩时间：2024.05</p>
+                <p style="font-size: 0.9rem; opacity: 0.8;">预计开放试玩时间：2026.04</p>
+            </div>
+
+            <!-- Game Jam 项目 -->
+            <div class="gamejam-card">
+                <div class="gamejam-img">
+                    <img src="file-image/2-2.png" alt="3D解谜游戏">
+                </div>
+                <div class="gamejam-content">
+                    <span class="tag-pill" style="align-self: flex-start; margin-bottom: 1rem; background: rgba(253, 203, 110, 0.2); color: #d63031;">Game Jam 正在进行中</span>
+                    <h3 style="font-size: 1.8rem; margin: 0 0 1rem 0;">箱庭 3D 解谜游戏</h3>
+                    <p style="color: var(--text-sec); margin-bottom: 1.5rem; font-size: 1rem;">
+                        这是一个以阿尔兹海默症为主题的第一人称双视角解谜游戏，玩家可自由扮演老人或子女。核心玩法围绕“存在性逻辑”展开。通过环境叙事与机制引导，构建沉浸式的解谜体验。
+                    </p>
+                    <div style="display: grid; grid-template-columns: auto 1fr; gap: 0.8rem 1rem; font-size: 0.95rem;">
+                        <span style="font-weight: 700; color: var(--text-main);">我的角色:</span>
+                        <span>策划 / UI 设计</span>
+                        
+                        <span style="font-weight: 700; color: var(--text-main);">主要职责:</span>
+                        <span>核心关卡谜题设计、UI 交互逻辑与视觉表现。</span>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
     <footer>
-        <p class="copyright">© 2024 杨颜冰. All rights reserved.</p>
+        <p class="copyright">© 2026 杨颜冰. All rights reserved.</p>
     </footer>
 
     <!-- 全屏覆盖层 (Overlay) -->
@@ -706,11 +784,7 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script>
-        // 设置 PDF.js worker
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-
         // 打开覆盖层
         function openOverlay(type, src, title) {
             const overlay = document.getElementById('fullOverlay');
@@ -721,45 +795,13 @@
             overlayBody.innerHTML = ''; // 清空内容
 
             if (type === 'pdf') {
-                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-                
-                // 统一使用 PDF.js 渲染 (解决移动端自动下载问题)
-                // 创建 Canvas 容器
-                const container = document.createElement('div');
-                container.style.cssText = 'width: 100%; height: 100%; overflow: auto; background: #525659; display: flex; flex-direction: column; align-items: center; padding: 20px 0;';
-                overlayBody.appendChild(container);
-
-                // 加载 PDF
-                const loadingTask = pdfjsLib.getDocument(src);
-                loadingTask.promise.then(function(pdf) {
-                    // 循环渲染每一页
-                    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-                        pdf.getPage(pageNum).then(function(page) {
-                            const viewport = page.getViewport({scale: isMobile ? 0.6 : 1.2}); // 移动端缩放比例调小
-                            const canvas = document.createElement('canvas');
-                            const context = canvas.getContext('2d');
-                            canvas.height = viewport.height;
-                            canvas.width = viewport.width;
-                            canvas.style.marginBottom = '20px';
-                            canvas.style.boxShadow = '0 4px 10px rgba(0,0,0,0.3)';
-
-                            const renderContext = {
-                                canvasContext: context,
-                                viewport: viewport
-                            };
-                            page.render(renderContext);
-                            container.appendChild(canvas);
-                        });
-                    }
-                }, function (reason) {
-                    // 加载失败回退
-                    console.error(reason);
-                    const link = document.createElement('a');
-                    link.href = src;
-                    link.textContent = 'PDF 预览失败，点击下载';
-                    link.style.color = '#fff';
-                    container.appendChild(link);
-                });
+                // 使用 iframe 直接嵌入，恢复 PC 端直接预览功能
+                const frame = document.createElement('iframe');
+                frame.src = src;
+                frame.className = 'pdf-frame';
+                // 允许全屏
+                frame.setAttribute('allowfullscreen', 'true');
+                overlayBody.appendChild(frame);
 
             } else if (type === 'image') {
                 // 图片查看器 - 增强拖拽与缩放功能
